@@ -11,6 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     container: gradle:6-jdk11
     steps:
+      - name: Validate Docker username is all lowercase
+        id: validate_lower
+        run: |
+          if [[ "${{ env.docker_username }}" =~ [A-Z] ]]; then
+            echo "::error::Validation Failed: Docker username '${{ env.docker_username }}' cannot contain uppercase characters."
+            exit 1
+          else
+            echo "Docker username format is valid."
+          fi
+        shell: bash
       - name: Clone down repository
         uses: actions/checkout@v4       
       - name: Build application
@@ -54,4 +64,25 @@ jobs:
         run: bash ci/build-docker.sh
       - name: push docker
         run: bash ci/push-docker.sh
-    
+  Component-test:
+    runs-on: ubuntu-latest
+    needs: [Docker-image]
+    steps:
+      - name: Download code
+        uses: actions/download-artifact@v4
+        with:
+          name: code
+          path: .
+      - name: Execute component test
+        run: bash ci/component-test.sh
+  Performance-test:
+    runs-on: ubuntu-latest
+    needs: [Docker-image]
+    steps:
+      - name: Download code
+        uses: actions/download-artifact@v4
+        with:
+          name: code
+          path: .
+      - name: Execute performance test
+        run: ci/performance-test.sh
