@@ -3,6 +3,7 @@ on: push
 env:
   docker_username: amitbush
   github_username: amitbush
+  github_password: ${{ secrets.GITHUB_TOKEN }}
   docker_password: ${{ secrets.GITHUB_TOKEN }}
   GIT_COMMIT: ${{ github.sha }}
 jobs:
